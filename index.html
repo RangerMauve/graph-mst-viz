@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <title>MST Viz Test</title>
 <svg id="root" viewbox="-1 -1 2 2"></svg>
+<script src="./graphics.js"></script>
 <script>
 	var SVGNS = "http://www.w3.org/2000/svg";
 	var TAU = Math.PI * 2;
@@ -13,90 +14,33 @@
 	var CENTER_RAD = 0.5;
 	var CIRCLE_SIZE = 0.02;
 	var NUM_NODES = 32;
+	var TO_BOOSTRAP = 6;
 
 	console.log("Good to go!");
-	makeRandomEdges(NUM_NODES / 2);
 	makeNodes(NUM_NODES);
 
-	setInterval(repopulate, 1000);
+	var NODE_STATES = {};
 
-	function addNode(n){
-		var p = nodePosition(n);
+	function wakeNode(n) {
 
-		var c = elm("circle", {
-			cx: p.x,
-			cy: p.y,
-			r: CIRCLE_SIZE,
-			style: `fill: hsl(${n / NUM_NODES * 360}, 80%, 50%)`
-		});
-
-		ROOT.appendChild(c);
 	}
 
-	function addEdge(n1, n2) {
-		var p1 = nodePosition(n1);
-		var p2 = nodePosition(n2);
 
-		var l = elm("line", {
-			x1: p1.x,
-			x2: p2.x,
-			y1: p1.y,
-			y2: p2.y,
-			style: `stroke: hsl(${n1 / NUM_NODES * 260}, 80%, 50%); z-index:${n1}`,
-			"stroke-width": 0.005
-		});
-
-		ROOT.appendChild(l);
-	}
-
-	function makeRandomEdges(n) {
-		while(n--) {
-			var n1 = randomNode();
-			var n2 = randomNode();
-			addEdge(n1, n2);
+	function setupNode(n) {
+		var nearby = [];
+		while(nearby.length > TO_BOOSTRAP) {
+			var p = randomNode();
+			if((nearby.indexOf(p) === -1) && (p !== n))
+				nearby.push(p);
 		}
-	}
 
-	function makeNodes(n) {
-		while(n--)
-			addNode(n);
+		NODE_STATES[n] = {
+			nearby: 0,
+			level: 0
+		};
 	}
 
 	function randomNode() {
 		return Math.round(Math.random() * NUM_NODES);
 	}
-
-	function nodePosition(n) {
-		var percent = n / NUM_NODES;
-		var rad = PERCENT_TO_RAD * percent;
-		var x = Math.sin(rad);
-		var y = Math.cos(rad);
-		var w = Math.sin(rad * WOBBLE) * WOBBLE_RAD;
-		
-		return {
-			x: x * CENTER_RAD + x * w,
-			y: y * CENTER_RAD + y * w
-		};
-	}
-
-	function elm(name, attributes){
-		var e = document.createElementNS(SVGNS, name);
-
-		for(var key in attributes)
-			e.setAttribute(key, attributes[key]);
-
-		return e;
-	}
-
-	function repopulate() {
-		clearLines();
-		makeRandomEdges(NUM_NODES / 2);		
-	}
-
-	function clearLines(){
-		Array.from(document.querySelectorAll("line")).forEach(function(line){
-			line.parentElement.removeChild(line);
-		});
-	}
-
 </script>
