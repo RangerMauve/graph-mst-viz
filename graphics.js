@@ -48,10 +48,16 @@ function addEdge(n1, n2) {
 		y1: p1.y,
 		y2: p2.y,
 		style: `stroke: hsl(${n1 / NUM_NODES * 360}, 70%, 50%); z-index:${n1}`,
-		"stroke-width": 0.005
+		"stroke-width": 0.005,
+		class: `edge e${n1} e${n2}`
 	});
 
 	ROOT.appendChild(l);
+}
+
+function removeEdge(n1, n2) {
+	Array.from(document.querySelectorAll(`.edge.e${n1}.e{n2}`))
+		.forEach(l => l.parentElement.removeChild(l));
 }
 
 function makeNodes(n) {

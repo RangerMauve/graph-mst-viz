@@ -16,28 +16,77 @@
 	var NUM_NODES = 32;
 	var TO_BOOSTRAP = 6;
 
+	var NODE_STATES = {};
+	var NODE_EDGES = {};
+
 	console.log("Good to go!");
 	makeNodes(NUM_NODES);
+	wakeAll();
 
-	var NODE_STATES = {};
-
-	function wakeNode(n) {
-
+	// setInterval(wakeRandom, 600);
+	
+	function wakeAll(){
+		var n = NUM_NODES;
+		while(n--)
+			setTimeout(wakeNode.bind(null, n), n * 200);
 	}
 
+	function wakeRandom(){
+		wakeNode(randomNode());
+	}
+
+	function wakeNode(n) {
+		console.log("Waking", n);
+		var state = getState(n);
+
+		var sorted = state.nearby.sort((a, b) => a ^ b);
+
+		var next = sorted.find((n2) => !isConnected(n, n2));
+		console.log("Found next node");
+		if(!next) return;
+		connectNode(n, next);
+	}
+
+	function isConnected(n1, n2){
+		return NODE_EDGES[edgeID(n1, n2)];
+	}
+
+	function connectNode(n1, n2) {
+		console.log("Connectin", n1, n2);
+		if(isConnected(n1, n2))
+			return;
+		NODE_EDGES[edgeID(n1, n2)] = true;
+
+		addEdge(n1, n2);
+	}
+
+	function edgeID(n1, n2) {
+		return `${Math.max(n1, n2)}-${Math.min(n1, n2)}`;
+	}
+
+	function getState(n){
+		if(!NODE_STATES[n])
+			setupNode(n);
+		return NODE_STATES[n];
+	}
 
 	function setupNode(n) {
 		var nearby = [];
-		while(nearby.length > TO_BOOSTRAP) {
+		while(nearby.length < TO_BOOSTRAP) {
 			var p = randomNode();
 			if((nearby.indexOf(p) === -1) && (p !== n))
 				nearby.push(p);
 		}
 
-		NODE_STATES[n] = {
-			nearby: 0,
+		var state = {
+			connected: [],
+			nearby: nearby,
 			level: 0
 		};
+
+		console.log("Set up node", n, state);
+
+		NODE_STATES[n] = state;
 	}
 
 	function randomNode() {
