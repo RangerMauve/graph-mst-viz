@@ -1,86 +1,126 @@
-function addNode(n) {
-	var p = nodePosition(n);
 
-	var c = elm("circle", {
-		cx: p.x,
-		cy: p.y,
-		r: CIRCLE_SIZE,
-		style: `fill: hsl(${n / NUM_NODES * 360}, 80%, 50%)`
+"use strict";
+
+function setupRender(){
+	var layout = new Springy.Layout.ForceDirected(GRAPH, 0.5, 0.5, 0.5);
+	var renderer = new Springy.Renderer(layout,
+		function clear() {
+			// Not needed for SVG renderer
+		},
+		function drawEdge(edge, p1, p2) {
+			positionEdge(edge, p1, p2);
+		},
+		function drawNode(node, p) {
+			positionNode(node, p);
+		}
+	);
+}
+
+function positionEdge(edge, p1, p2) {
+	var n1 = edge.source.id;
+	var n2 = edge.target.id;
+
+	var e = document.querySelector(edgeSelector(n1, n2)) || addEdgeDOM(edge);
+
+	updateElm(e, {
+		x1: p1.x,
+		x2: p2.x,
+		y1: p1.y,
+		y2: p2.y,
+	});
+}
+
+function positionNode(node, point) {
+	var id = node.id;
+	var nodeElm = document.getElementById(nodeID(id)) || addNodeDOM(node);
+
+	updateElm(nodeElm, {
+		transform: `translate(${point.x}, ${point.y})`
+	});
+}
+
+function addNodeDOM(node) {
+	var n = node.id;
+
+	var g = elm("g", {
+		id: nodeID(n),
+		transform: "translate(0,0)",
 	});
 
-	ROOT.appendChild(c);
+	var c = elm("circle", {
+		cx: 0,
+		cy: 0,
+		r: CIRCLE_SIZE,
+		style: `fill: hsl(${n / NUM_NODES * 360}, 100%, 50%)`
+	});
+
+	g.appendChild(c);
 
 	var t = elm("text", {
-		x: p.x * 1.1,
-		y: p.y * 1.1,
-		"font-size": 0.05,
+		x: 0,
+		y: -CIRCLE_SIZE,
+		"font-size": CIRCLE_SIZE,
 		"text-anchor": "middle",
 		fill: "black"
 	});
 
 	t.innerHTML = "" + n;
 
-	ROOT.appendChild(t);
+	g.appendChild(t);
 
 	var l = elm("text", {
 		id: "nl-" + n,
-		x: p.x,
-		y: p.y - 0.025,
-		"font-size": 0.05,
+		x: 0,
+		y: LABEL_POSITION,
+		"font-size": CIRCLE_SIZE,
 		"text-anchor": "middle",
 		fill: "black"
 	});
 
-	ROOT.appendChild(l);
+	g.appendChild(l);
+
+	ROOT.appendChild(g);
+
+	return g;
 }
 
 function setNodeContent(n, t){
 	document.querySelector("#n1-" + n).innerHTML = t;
 }
 
-function addEdge(n1, n2) {
-	var p1 = nodePosition(n1);
-	var p2 = nodePosition(n2);
+function addEdgeDOM(edge) {
+	var n1 = edge.source.id;
+	var n2 = edge.target.id;
 
 	var l = elm("line", {
-		x1: p1.x,
-		x2: p2.x,
-		y1: p1.y,
-		y2: p2.y,
+		x1: 0,
+		x2: 0,
+		y1: 0,
+		y2: 0,
 		style: `stroke: hsl(${n1 / NUM_NODES * 360}, 70%, 50%); z-index:${n1}`,
-		"stroke-width": 0.005,
-		class: `edge e${n1} e${n2}`
+		"stroke-width": EDGE_SIZE,
+		class: edgeID(n1, n2)
 	});
 
 	ROOT.appendChild(l);
+
+	return l;
 }
 
-function removeEdge(n1, n2) {
+function removeEdgeDOM(n1, n2) {
 	Array.from(document.querySelectorAll(`.edge.e${n1}.e{n2}`))
 		.forEach(l => l.parentElement.removeChild(l));
-}
-
-function makeNodes(n) {
-	while (n--)
-		addNode(n);
-}
-
-function nodePosition(n) {
-	var percent = n / NUM_NODES;
-	var rad = PERCENT_TO_RAD * percent;
-	var x = Math.sin(rad);
-	var y = Math.cos(rad);
-	var w = Math.sin(rad * WOBBLE) * WOBBLE_RAD;
-
-	return {
-		x: x * CENTER_RAD + x * w,
-		y: y * CENTER_RAD + y * w
-	};
 }
 
 function elm(name, attributes) {
 	var e = document.createElementNS(SVGNS, name);
 
+	updateElm(e, attributes);
+
+	return e;
+}
+
+function updateElm(e, attributes) {
 	for (var key in attributes)
 		e.setAttribute(key, attributes[key]);
 

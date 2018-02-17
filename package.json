@@ -1,0 +1,22 @@
+{
+  "name": "graph-mst-viz",
+  "version": "1.0.0",
+  "description": "Playing around with distributed minimal spanning tree algos by visualizing them",
+  "main": "graphics.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RangerMauve/graph-mst-viz.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RangerMauve/graph-mst-viz/issues"
+  },
+  "homepage": "https://github.com/RangerMauve/graph-mst-viz#readme",
+  "devDependencies": {
+    "eslint": "^4.18.0"
+  }
+}

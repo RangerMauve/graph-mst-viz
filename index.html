@@ -1,6 +1,18 @@
 <!DOCTYPE html>
 <title>MST Viz Test</title>
-<svg id="root" viewbox="-1 -1 2 2"></svg>
+<style>
+	body, html, svg {
+		margin: 0;
+		padding: 0;
+		height: 100vmin;
+		width: 100vmin;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+</style>
+<svg id="root" viewbox="-8 -8 16 16"></svg>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/springy/2.7.1/springy.js"></script>
 <script src="./graphics.js"></script>
 <script>
 	var SVGNS = "http://www.w3.org/2000/svg";
@@ -9,25 +21,28 @@
 	var PERCENT_TO_RAD = TAU;
 	var RAD_TO_PERCENT = 1 / PERCENT_TO_RAD;
 	var ROOT = document.getElementById("root");
-	var WOBBLE = 8;
-	var WOBBLE_RAD = 0.1;
-	var CENTER_RAD = 0.5;
-	var CIRCLE_SIZE = 0.02;
+	var CIRCLE_SIZE = 0.2;
+	var EDGE_SIZE = 0.01;
 	var NUM_NODES = 32;
 	var TO_BOOSTRAP = 6;
-
+	var LABEL_POSITION = - 0.1;
+	
+	var GRAPH = new Springy.Graph();
 	var NODE_STATES = {};
 	var NODE_EDGES = {};
+	var NODE_REFERENCES = {};
+	var EDGE_REFERENCES = {};
 
 	console.log("Good to go!");
-	makeNodes(NUM_NODES);
+	setupRender();
+	makeNodes();
 	wakeAll();
 
 	// setInterval(wakeRandom, 600);
 	
 	function wakeAll(){
-		var n = NUM_NODES;
-		while(n--)
+		var n = NUM_NODES + 1;
+		while(--n)
 			setTimeout(wakeNode.bind(null, n), n * 200);
 	}
 
@@ -60,8 +75,30 @@
 		addEdge(n1, n2);
 	}
 
+	function addEdge(n1, n2) {
+		var n1R = NODE_REFERENCES[n1];
+		var n2R = NODE_REFERENCES[n2];
+		var eR = GRAPH.newEdge(n1R, n2R);
+		NODE_EDGES[`${n1}-${n2}`] = eR;
+	}
+	
+	function addNode(n) {
+		var nR = new Springy.Node(n);
+
+		NODE_REFERENCES[n] = nR;
+		GRAPH.addNode(nR);
+	}
+
 	function edgeID(n1, n2) {
-		return `${Math.max(n1, n2)}-${Math.min(n1, n2)}`;
+		return `edge e${Math.max(n1, n2)} e${Math.min(n1, n2)}`;
+	}
+
+	function edgeSelector(n1, n2){
+		return "." + edgeID(n1, n2).split(" ").join(".");
+	}
+
+	function nodeID(n) {
+		return `node n${n}`;
 	}
 
 	function getState(n){
@@ -89,7 +126,15 @@
 		NODE_STATES[n] = state;
 	}
 
+	
+	function makeNodes() {
+		var n = NUM_NODES + 1;
+
+		while (--n)
+			addNode(n);
+	}
+
 	function randomNode() {
-		return Math.round(Math.random() * NUM_NODES);
+		return Math.ceil(Math.random() * NUM_NODES);
 	}
 </script>

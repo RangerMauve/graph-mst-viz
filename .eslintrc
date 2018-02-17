@@ -1,0 +1,43 @@
+{
+	"extends": [
+	"eslint:recommended"
+	],
+	"env": {
+		"browser": true
+	},
+	"rules": {
+		"quotes": ["error"],
+		"comma-spacing": ["warn"],
+		"no-undef": 0,
+		"no-unused-vars": 0,
+		"strict": [2, "global"],
+		"new-cap": 0,
+		"indent": ["error", "tab", {
+			"MemberExpression": 1,
+			"ArrayExpression": 1,
+			"ObjectExpression": 1
+		}],
+		"no-console": 0,
+		"no-invalid-this": 0,
+		"no-trailing-spaces": 2,
+		"semi": ["error", "always"],
+		"key-spacing": ["warn", {
+			"beforeColon": false,
+			"afterColon": true
+		}],
+		"space-infix-ops": ["warn"],
+		"object-curly-newline": ["warn", {
+			"minProperties": 1
+		}],
+		"no-shadow": ["error"],
+		"no-undef-init": ["error"],
+		"no-multiple-empty-lines": ["warn", {
+			"maxEOF": 1,
+			"max": 1
+		}]
+	},
+	"parserOptions": {
+		"ecmaVersion": 7,
+		"sourceType": "script"
+	}
+}
