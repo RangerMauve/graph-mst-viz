@@ -2,7 +2,7 @@
 "use strict";
 
 function setupRender(){
-	var layout = new Springy.Layout.ForceDirected(GRAPH, 0.5, 0.5, 0.5);
+	var layout = new Springy.Layout.ForceDirected(GRAPH, STIFFNESS, REPULSION, DAMPENING);
 	var renderer = new Springy.Renderer(layout,
 		function clear() {
 			// Not needed for SVG renderer
@@ -107,8 +107,11 @@ function addEdgeDOM(edge) {
 	return l;
 }
 
-function removeEdgeDOM(n1, n2) {
-	Array.from(document.querySelectorAll(`.edge.e${n1}.e{n2}`))
+function removeEdgeDOM(edge) {
+	var n1 = edge.source.id;
+	var n2 = edge.target.id;
+
+	Array.from(document.querySelectorAll(edgeSelector(n1, n2)))
 		.forEach(l => l.parentElement.removeChild(l));
 }
 

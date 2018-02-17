@@ -11,7 +11,7 @@
 		align-items: center;
 	}
 </style>
-<svg id="root" viewbox="-8 -8 16 16"></svg>
+<svg id="root" viewbox="-16 -16 32 32"></svg>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/springy/2.7.1/springy.js"></script>
 <script src="./graphics.js"></script>
 <script>
@@ -21,11 +21,18 @@
 	var PERCENT_TO_RAD = TAU;
 	var RAD_TO_PERCENT = 1 / PERCENT_TO_RAD;
 	var ROOT = document.getElementById("root");
-	var CIRCLE_SIZE = 0.2;
-	var EDGE_SIZE = 0.01;
-	var NUM_NODES = 32;
-	var TO_BOOSTRAP = 6;
+	var NUM_NODES = 64;
+	var CIRCLE_SIZE = NUM_NODES / 80;
+	var EDGE_SIZE = CIRCLE_SIZE / 20;
+	var TO_BOOSTRAP = NUM_NODES / 4;
 	var LABEL_POSITION = - 0.1;
+	var SLEEP_WAIT = 500;
+	var STIFFNESS = 0.5;
+	var REPULSION = 3;
+	var DAMPENING = 0.98;
+	var PERCENT_FAR = 0.33;
+
+	ROOT.setAttribute("viewBox", `-${NUM_NODES/2} -${NUM_NODES/2} ${NUM_NODES} ${NUM_NODES}`);
 	
 	var GRAPH = new Springy.Graph();
 	var NODE_STATES = {};
@@ -38,12 +45,14 @@
 	makeNodes();
 	wakeAll();
 
-	// setInterval(wakeRandom, 600);
-	
+	// setTimeout(wakeAll, NUM_NODES * SLEEP_WAIT);
+
 	function wakeAll(){
-		var n = NUM_NODES + 1;
-		while(--n)
-			setTimeout(wakeNode.bind(null, n), n * 200);
+		// var n = NUM_NODES + 1;
+		var list = makeRandomList(NUM_NODES);
+		list.forEach( (id, index) => {
+			setTimeout(wakeNode.bind(null, id), index * SLEEP_WAIT);
+		});
 	}
 
 	function wakeRandom(){
@@ -54,12 +63,17 @@
 		console.log("Waking", n);
 		var state = getState(n);
 
-		var sorted = state.nearby.sort((a, b) => a ^ b);
+		var available = state.nearby.filter((n2) => !isConnected(n, n2));
+		var closest = available[0];
+		var farthest = available[available.length - 1];
 
-		var next = sorted.find((n2) => !isConnected(n, n2));
-		console.log("Found next node");
-		if(!next) return;
-		connectNode(n, next);
+		if(closest)
+			connectNode(n, closest);
+
+		if(closest)
+			connectNode(n, closest)
+		if((Math.random() < PERCENT_FAR) && farthest && farthest !== closest)
+			connectNode(n, farthest);
 	}
 
 	function isConnected(n1, n2){
@@ -79,7 +93,7 @@
 		var n1R = NODE_REFERENCES[n1];
 		var n2R = NODE_REFERENCES[n2];
 		var eR = GRAPH.newEdge(n1R, n2R);
-		NODE_EDGES[`${n1}-${n2}`] = eR;
+		EDGE_REFERENCES[`${n1}-${n2}`] = eR;
 	}
 	
 	function addNode(n) {
@@ -108,12 +122,13 @@
 	}
 
 	function setupNode(n) {
-		var nearby = [];
-		while(nearby.length < TO_BOOSTRAP) {
-			var p = randomNode();
-			if((nearby.indexOf(p) === -1) && (p !== n))
-				nearby.push(p);
-		}
+		var nearby = makeRandomList(TO_BOOSTRAP).filter(function(other){
+			return other !== n;
+		}).sort((a, b) => {
+			var distanceA = n ^ a;
+			var distanceB = n ^ b;
+			return distanceA - distanceB;
+		});;
 
 		var state = {
 			connected: [],
@@ -124,6 +139,17 @@
 		console.log("Set up node", n, state);
 
 		NODE_STATES[n] = state;
+	}
+
+	function makeRandomList(size) {
+		var list = [];
+		while (list.length < size) {
+			var p = randomNode();
+			if (list.indexOf(p) === -1)
+				list.push(p);
+		}
+
+		return list;
 	}
 
 	
